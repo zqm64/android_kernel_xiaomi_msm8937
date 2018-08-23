@@ -45,6 +45,7 @@
 		i2c2 = &i2c_2;
 		i2c5 = &i2c_5;
 		i2c3 = &i2c_3;
+		i2c4 = &i2c_4;
 		i2c6 = &i2c_6;
 		sdhc1 = &sdhc_1; /* SDC1 eMMC slot */
 		sdhc2 = &sdhc_2; /* SDC2 for SD card */
@@ -61,7 +62,7 @@
 					type = "ext4";
 					mnt_flags = "ro,barrier=1,discard";
 					fsmgr_flags = "wait";
-					status = "ok";
+					status = "disabled";
 				};
 				 system {
 					compatible = "android,system";

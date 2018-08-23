@@ -4,7 +4,6 @@
  *
  * Copyright (C) 2007 Google, Inc.
  * Copyright (c) 2007-2015, The Linux Foundation. All rights reserved.
- * Copyright (C) 2018 XiaoMi, Inc.
  * Author: Mike A. Chan <mikechan@google.com>
  *
  * This software is licensed under the terms of the GNU General Public
@@ -24,14 +23,11 @@
 #include <linux/cpu.h>
 #include <linux/cpumask.h>
 #include <linux/suspend.h>
-#include <linux/clk.h>
+#include <linux/clk/msm-clk-provider.h>
 #include <linux/err.h>
 #include <linux/platform_device.h>
 #include <linux/of.h>
 #include <trace/events/power.h>
-
-#include <linux/proc_fs.h>
-#include <linux/uaccess.h>
 
 static DEFINE_MUTEX(l2bw_lock);
 
@@ -318,36 +314,6 @@ static struct cpufreq_driver msm_cpufreq_driver = {
 	.name		= "msm",
 	.attr		= msm_freq_attr,
 };
-static unsigned long max_freq=0;
-static int cpumaxfreq_proc_show(struct seq_file *m, void *v)
-{
-	unsigned long freq = 0;
-	if((max_freq/1000)%10>=5)
-		freq=1+(max_freq/10000);
-	else
-		freq=(max_freq/10000);
-
-	#if defined(CONFIG_ULYSSE)
-	freq = 200;
-	seq_printf(m, "%lu.%02lu", freq/100, freq%100);
-	#else
-	seq_printf(m, "%lu.%02lu", freq/100, freq%100);
-	#endif
-
-	return 0;
-}
-
-static int cpumaxfreq_proc_open(struct inode *inode, struct file *file)
-{
-	return single_open(file, cpumaxfreq_proc_show, NULL);
-}
-static const struct file_operations cpumaxfreq_proc_fops = {
-	.open		= cpumaxfreq_proc_open,
-	.read		= seq_read,
-	.llseek		= seq_lseek,
-	.release	= single_release,
-};
-
 
 static struct cpufreq_frequency_table *cpufreq_parse_dt(struct device *dev,
 						char *tbl_name, int cpu)
@@ -404,7 +370,6 @@ static struct cpufreq_frequency_table *cpufreq_parse_dt(struct device *dev,
 
 		ftbl[i].driver_data = i;
 		ftbl[i].frequency = f;
-		if(max_freq<f) max_freq=f;
 	}
 
 	ftbl[i].driver_data = i;
@@ -433,6 +398,7 @@ static int __init msm_cpufreq_probe(struct platform_device *pdev)
 		c = devm_clk_get(dev, clk_name);
 		if (IS_ERR(c))
 			return PTR_ERR(c);
+		c->flags |= CLKFLAG_NO_RATE_CACHE;
 		cpu_clk[cpu] = c;
 	}
 	hotplug_ready = true;
@@ -441,7 +407,6 @@ static int __init msm_cpufreq_probe(struct platform_device *pdev)
 	if (of_property_read_bool(dev->of_node, "qcom,governor-per-policy"))
 		msm_cpufreq_driver.flags |= CPUFREQ_HAVE_GOVERNOR_PER_POLICY;
 
-	proc_create("cpumaxfreq", 0444, NULL, &cpumaxfreq_proc_fops);
 	/* Parse commong cpufreq table for all CPUs */
 	ftbl = cpufreq_parse_dt(dev, "qcom,cpufreq-table", 0);
 	if (!IS_ERR(ftbl)) {

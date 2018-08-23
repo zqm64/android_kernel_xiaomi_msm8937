@@ -1,5 +1,4 @@
 /* Copyright (c) 2014-2017, The Linux Foundation. All rights reserved.
- * Copyright (C) 2018 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -2850,7 +2849,6 @@ wait:
 
 	if (fg_debug_mask & FG_MEM_DEBUG_READS)
 		pr_info("BATT_TEMP %d %d\n", temp, fg_data[0].value);
-	pr_err("BATT_TEMP %d %d\n", temp, fg_data[0].value);
 
 	get_current_time(&chip->last_temp_update_time);
 
@@ -3242,9 +3240,7 @@ static int estimate_battery_age(struct fg_chip *chip, int *actual_capacity)
 	}
 
 	battery_soc = get_battery_soc_raw(chip) * 100 / FULL_PERCENT_3B;
-	if (rc) {
-		goto error_done;
-	} else if (battery_soc < 25 || battery_soc > 75) {
+	if (battery_soc < 25 || battery_soc > 75) {
 		if (fg_debug_mask & FG_AGING)
 			pr_info("Battery SoC (%d) out of range, aborting\n",
 					(int)battery_soc);
@@ -4617,6 +4613,7 @@ static int fg_power_get_property(struct power_supply *psy,
 {
 	struct fg_chip *chip = container_of(psy, struct fg_chip, bms_psy);
 	bool vbatt_low_sts;
+
 	switch (psp) {
 	case POWER_SUPPLY_PROP_BATTERY_TYPE:
 		if (chip->battery_missing)
@@ -4683,7 +4680,7 @@ static int fg_power_get_property(struct power_supply *psy,
 		break;
 	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
 		val->intval = 3200;
-		break;
+				break;
 	case POWER_SUPPLY_PROP_CHARGE_FULL:
 		val->intval = chip->learning_data.learned_cc_uah;
 		break;
@@ -5472,14 +5469,7 @@ static irqreturn_t fg_soc_irq_handler(int irq, void *_chip)
 		schedule_work(&chip->esr_extract_config_work);
 	}
 
-	printk("%s, capacity=%d, current=%d, chg_status=%d, usb_present=%d, voltage=%d, batt_temp=%d, batt_id=%d\n", __func__,
-		get_prop_capacity(chip),
-		get_sram_prop_now(chip, FG_DATA_CURRENT),
-		chip->status,
-		is_usb_present(chip),
-		get_sram_prop_now(chip, FG_DATA_VOLTAGE),
-		get_sram_prop_now(chip, FG_DATA_BATT_TEMP),
-		get_sram_prop_now(chip, FG_DATA_BATT_ID));
+
 	return IRQ_HANDLED;
 }
 
@@ -6352,6 +6342,7 @@ fail:
 	chip->fg_restarting = false;
 	return -EINVAL;
 }
+
 #define FG_PROFILE_LEN			128
 #define PROFILE_COMPARE_LEN		32
 #define THERMAL_COEFF_ADDR		0x444
@@ -6654,8 +6645,8 @@ done:
 	if (chip->power_supply_registered)
 		power_supply_changed(&chip->bms_psy);
 	fg_relax(&chip->profile_wakeup_source);
-	pr_info("Battery SOC: %d, V: %duV batt_id %d\n", get_prop_capacity(chip),
-		fg_data[FG_DATA_VOLTAGE].value,get_sram_prop_now(chip, FG_DATA_BATT_ID));
+	pr_info("Battery SOC: %d, V: %duV\n", get_prop_capacity(chip),
+		fg_data[FG_DATA_VOLTAGE].value);
 	complete_all(&chip->fg_reset_done);
 	return rc;
 no_profile:
@@ -8599,7 +8590,8 @@ static int fg_memif_init(struct fg_chip *chip)
 		return rc;
 	}
 
-	switch (chip->revision[DIG_MAJOR]) {
+	dig_major = chip->revision[DIG_MAJOR];
+	switch (dig_major) {
 	case DIG_REV_1:
 	case DIG_REV_2:
 		chip->offset = offset[0].address;

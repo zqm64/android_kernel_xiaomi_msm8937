@@ -656,7 +656,7 @@ int diag_dci_query_log_mask(struct diag_dci_client_tbl *entry,
 	byte_mask = 0x01 << (item_num % 8);
 	offset = equip_id * 514;
 
-	if (offset + byte_index > DCI_LOG_MASK_SIZE) {
+	if (offset + byte_index >= DCI_LOG_MASK_SIZE) {
 		pr_err("diag: In %s, invalid offset: %d, log_code: %d, byte_index: %d\n",
 				__func__, offset, log_code, byte_index);
 		return 0;
@@ -683,7 +683,7 @@ int diag_dci_query_event_mask(struct diag_dci_client_tbl *entry,
 	bit_index = event_id % 8;
 	byte_mask = 0x1 << bit_index;
 
-	if (byte_index > DCI_EVENT_MASK_SIZE) {
+	if (byte_index >= DCI_EVENT_MASK_SIZE) {
 		pr_err("diag: In %s, invalid, event_id: %d, byte_index: %d\n",
 				__func__, event_id, byte_index);
 		return 0;
@@ -1451,8 +1451,8 @@ void diag_dci_notify_client(int peripheral_mask, int data, int proc)
 						pr_err("diag: Err sending dci signal to client, signal data: 0x%x, stat: %d\n",
 							info.si_int, stat);
 				} else
-					pr_err("diag: client data is corrupted, signal data: 0x%x, stat: %d\n",
-						info.si_int, stat);
+					pr_err("diag: client data is corrupted, signal data: 0x%x\n",
+						info.si_int);
 			}
 		}
 	}

@@ -1,5 +1,4 @@
 /* Copyright (c) 2015-2017, The Linux Foundation. All rights reserved.
- * Copyright (C) 2018 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -10,7 +9,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-/*#define DEBUG*/
+
 #include <linux/clk.h>
 #include <linux/delay.h>
 #include <linux/gpio.h>
@@ -311,7 +310,7 @@ static int enable_spk_ext_pa(struct snd_soc_codec *codec, int enable)
 	int ret;
 
 	if (!gpio_is_valid(pdata->spk_ext_pa_gpio)) {
-		pr_debug("%s: Invalid gpio: %d\n", __func__,
+		pr_err("%s: Invalid gpio: %d\n", __func__,
 			pdata->spk_ext_pa_gpio);
 		return false;
 	}
@@ -3503,7 +3502,6 @@ static int msm8952_asoc_machine_probe(struct platform_device *pdev)
 	const char *smartpa_name = "qcom,smartpa-name";
 #endif
 
-
 	pdata = devm_kzalloc(&pdev->dev,
 			sizeof(struct msm8916_asoc_mach_data), GFP_KERNEL);
 	if (!pdata)
@@ -3527,6 +3525,7 @@ static int msm8952_asoc_machine_probe(struct platform_device *pdev)
 		ret = -ENOMEM;
 		goto err1;
 	}
+
 	muxsel = platform_get_resource_byname(pdev, IORESOURCE_MEM,
 			"csr_gp_io_mux_spkr_ctl");
 	if (!muxsel) {
@@ -3542,6 +3541,7 @@ static int msm8952_asoc_machine_probe(struct platform_device *pdev)
 		ret = -ENOMEM;
 		goto err;
 	}
+
 	muxsel = platform_get_resource_byname(pdev, IORESOURCE_MEM,
 			"csr_gp_io_lpaif_pri_pcm_pri_mode_muxsel");
 	if (!muxsel) {
@@ -3557,6 +3557,7 @@ static int msm8952_asoc_machine_probe(struct platform_device *pdev)
 		ret = -ENOMEM;
 		goto err;
 	}
+
 	muxsel = platform_get_resource_byname(pdev, IORESOURCE_MEM,
 			"csr_gp_io_mux_quin_ctl");
 	if (!muxsel) {
@@ -3630,6 +3631,7 @@ parse_mclk_freq:
 			pdata->ext_pa = (pdata->ext_pa | QUIN_MI2S_ID);
 	}
 	pr_debug("%s: ext_pa = %d\n", __func__, pdata->ext_pa);
+
 	ret = is_us_eu_switch_gpio_support(pdev, pdata);
 	if (ret < 0) {
 		pr_err("%s: failed to is_us_eu_switch_gpio_support %d\n",
@@ -3656,6 +3658,7 @@ parse_mclk_freq:
 		dev_dbg(&pdev->dev, "Headset is using internal micbias\n");
 		mbhc_cfg.hs_ext_micbias = false;
 	}
+
 	ret = of_property_read_u32(pdev->dev.of_node,
 				  "qcom,msm-afe-clk-ver", &val);
 	if (ret)
@@ -3683,6 +3686,7 @@ parse_mclk_freq:
 
 	/* Initialize loopback mode to false */
 	pdata->lb_mode = false;
+
 	msm8952_dt_parse_cap_info(pdev, pdata);
 #if defined(CONFIG_SPEAKER_EXT_PA)
 	pr_debug("At %d In (%s),will run msm8x16_setup_spk_ext_pa\n",__LINE__, __FUNCTION__);
@@ -3723,11 +3727,13 @@ parse_mclk_freq:
 			"qcom,audio-routing");
 	if (ret)
 		goto err;
+
 	ret = msm8952_populate_dai_link_component_of_node(card);
 	if (ret) {
 		ret = -EPROBE_DEFER;
 		goto err;
 	}
+
 	ret = snd_soc_register_card(card);
 	if (ret) {
 		dev_err(&pdev->dev, "snd_soc_register_card failed (%d)\n",

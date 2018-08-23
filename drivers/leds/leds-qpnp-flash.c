@@ -1,5 +1,4 @@
 /* Copyright (c) 2014-2017, The Linux Foundation. All rights reserved.
- * Copyright (C) 2018 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -226,11 +225,11 @@ struct flash_led_platform_data {
 };
 
 struct qpnp_flash_led_buffer {
-	struct mutex debugfs_lock; /* Prevent thread concurrency */
-	size_t rpos;
-	size_t wpos;
-	size_t len;
-	char data[0];
+	struct		mutex debugfs_lock; /* Prevent thread concurrency */
+	size_t		rpos;
+	size_t		wpos;
+	size_t		len;
+	char		data[0];
 };
 
 /*
@@ -2744,4 +2743,3 @@ module_exit(qpnp_flash_led_exit);
 MODULE_DESCRIPTION("QPNP Flash LED driver");
 MODULE_LICENSE("GPL v2");
 MODULE_ALIAS("leds:leds-qpnp-flash");
-

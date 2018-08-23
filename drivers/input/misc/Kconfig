@@ -825,4 +825,3 @@ config DOUBLE_TAP
 	 If you say yes here, you get support Bosch double tap sensor function
 
 endif
-

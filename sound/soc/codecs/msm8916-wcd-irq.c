@@ -1,5 +1,4 @@
-/* Copyright (c) 2015, The Linux Foundation. All rights reserved.
- * Copyright (C) 2018 XiaoMi, Inc.
+/* Copyright (c) 2015,2017, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -218,7 +217,8 @@ static int get_order_irq(int  i)
 
 static irqreturn_t wcd9xxx_spmi_irq_handler(int linux_irq, void *data)
 {
-	int irq, i, j;
+	int irq, i;
+	int j;
 	unsigned long status[NUM_IRQ_REGS] = {0};
 
 	if (unlikely(wcd9xxx_spmi_lock_sleep() == false)) {

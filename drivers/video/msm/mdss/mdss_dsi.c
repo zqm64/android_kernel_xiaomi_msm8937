@@ -43,6 +43,10 @@ static struct mdss_dsi_data *mdss_dsi_res;
 #define DSI_DISABLE_PC_LATENCY 100
 #define DSI_ENABLE_PC_LATENCY PM_QOS_DEFAULT_VALUE
 
+#if defined(CONFIG_UGGLITE)||defined(CONFIG_UGG)
+int ID0_status,ID1_status;
+#endif
+
 static struct pm_qos_request mdss_dsi_pm_qos_request;
 
 static void mdss_dsi_pm_qos_add_request(struct mdss_dsi_ctrl_pdata *ctrl_pdata)
@@ -344,7 +348,11 @@ static int mdss_dsi_panel_power_on(struct mdss_panel_data *pdata)
 			pr_err("%s: Panel reset failed. rc=%d\n",
 					__func__, ret);
 	}
-
+#if defined(CONFIG_UGGLITE)||defined(CONFIG_UGG)
+	ID0_status = gpio_get_value(59);
+	ID1_status = gpio_get_value(66);
+	printk("swb.%s:get lcd_detect id0=%d,id1=%d\n", __func__,ID0_status,ID1_status);
+#endif
 	return ret;
 }
 
@@ -2035,7 +2043,7 @@ static int __mdss_dsi_dfps_update_clks(struct mdss_panel_data *pdata,
 {
 	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;
 	struct mdss_dsi_ctrl_pdata *sctrl_pdata = NULL;
-	struct mdss_panel_info *pinfo, *spinfo;
+	struct mdss_panel_info *pinfo, *spinfo = NULL;
 	int rc = 0;
 
 	if (pdata == NULL) {
@@ -2184,7 +2192,7 @@ static int __mdss_dsi_dfps_update_clks(struct mdss_panel_data *pdata,
 
 	/* update new fps that at this point is already updated in hw */
 	pinfo->current_fps = new_fps;
-	if (sctrl_pdata) {
+	if (spinfo) {
 		spinfo->current_fps = new_fps;
 	}
 
@@ -4097,6 +4105,26 @@ static int mdss_dsi_parse_gpio_params(struct platform_device *ctrl_pdev,
 	if (!gpio_is_valid(ctrl_pdata->bklt_en_gpio))
 		pr_info("%s: bklt_en gpio not specified\n", __func__);
 
+
+	ctrl_pdata->ocp2131_enp_gpio = of_get_named_gpio(ctrl_pdev->dev.of_node,"qcom,ocp2131-enp-gpio", 0);
+	if (!gpio_is_valid(ctrl_pdata->ocp2131_enp_gpio))
+		pr_info("%s: ocp2131_enp_gpio not specified\n", __func__);
+
+	ctrl_pdata->ocp2131_enn_gpio = of_get_named_gpio(ctrl_pdev->dev.of_node,"qcom,ocp2131-enn-gpio", 0);
+	if (!gpio_is_valid(ctrl_pdata->ocp2131_enn_gpio))
+		pr_info("%s: ocp2131_enn_gpio not specified\n", __func__);
+	ctrl_pdata->lcm_vci_en_gpio = of_get_named_gpio(ctrl_pdev->dev.of_node,
+			"qcom,lcm-vci-en-gpio", 0);
+	if(!gpio_is_valid(ctrl_pdata->lcm_vci_en_gpio))
+		pr_info("%s: lcm_vci-en-gpio not specified\n",__func__);
+		 ctrl_pdata->lcmio_en_gpio = of_get_named_gpio(ctrl_pdev->dev.of_node,
+			"qcom,vddio-gpio", 0);
+	if(!gpio_is_valid(ctrl_pdata->lcmio_en_gpio)) {
+	     printk("ysg free 20\n");
+
+	}
+	if(!gpio_is_valid(ctrl_pdata->lcmio_en_gpio))
+	pr_info("%s: ysg lcmio-en gpio not specified\n",__func__);
 	ctrl_pdata->rst_gpio = of_get_named_gpio(ctrl_pdev->dev.of_node,
 			 "qcom,platform-reset-gpio", 0);
 	if (!gpio_is_valid(ctrl_pdata->rst_gpio))

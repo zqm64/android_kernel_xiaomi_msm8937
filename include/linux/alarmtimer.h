@@ -64,4 +64,3 @@ extern bool poweron_alarm;
 #endif
 
 #endif
-

@@ -263,4 +263,3 @@ void __init rtc_sysfs_init(struct class *rtc_class)
 {
 	rtc_class->dev_groups = rtc_groups;
 }
-
